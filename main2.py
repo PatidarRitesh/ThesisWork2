@@ -378,6 +378,14 @@ def get_information(root, Matched_data, paper_name, paper_format="ACL/M"):
                     information['author'].append(tup[0])
                     # author_elem = ET.SubElement(entry_elem, f'author{len(information["author"])}')
                     # author_elem.text = tup[0]
+        else:
+            print(Matched_data['15'])
+            for author in Matched_data['15']:
+                information['author'].append("".join(author))
+                # author_elem = ET.SubElement(entry_elem, f'author{len(information["author"])}')
+                # author_elem.text = author
+            # print(information['author'])
+            # input()
     except Exception as e:
         print("Error in fetching author name")
     
@@ -517,6 +525,17 @@ def get_information2(root, Matched_data, paper_name, data_1):
             # title_elem.text = information['title']
     except Exception as e:
         print("Error in fetching title")
+    try:
+        if len(Matched_data['8'])>=7:
+            if len(Matched_data['8'][6]):
+                
+                information['title'] +=" : "+ Matched_data['8'][6][2]
+        # if information['title'] != '':
+            # title_elem = ET.SubElement(entry_elem, 'title')
+            # title_elem.text = information['title']
+    except Exception as e:
+        print("Error in fetching title")
+
 
     try:
 
@@ -548,11 +567,13 @@ output_directory = f'{directory}results2/'
 
 
 Patterns = { 
-    'Author_ACM_ACL_1' : r'''{person}{([A-Za-z0-9\s~.]+)({[\\'\w\d\s"-]+}[\d\w\s-])''',
+    
+    'Author_ACM_ACL_2' : r'''{person}{([A-Za-z0-9\s~.]+)({[\\'\w\d\s"-]+}[\d\w\s-]*)*''',
+    'Author_ACM_ACL_1' : r'''{person}{([A-Za-z0-9\s~.]+)({[\\'\w\d\s"-]+}[\d\w\s-]*)*''',
     'YEAR_ACM_ACL_1' : r'''{year}{(\d{4})}''',
     'BIB_ACM_ACL_1' : r'''\]% {([\w\d\s:\/-]+)}''',
 
-    'Article_ACM_ACL_2' : r'''\\showarticletitle{([\w\d\s:{}“”;_$%@!,.?-])}''',
+    'Article_ACM_ACL_2' : r'''\\showarticletitle{([\w\d\s:{}“”;_$%*@!,.?-]*)}''',
     'Book_ACM_ACL_2' : r'''booktitle}{\\emph{([\w\s:,{}*;"'()\/-]+)}}''',
     'Publisher_ACM_ACL_2' : r'''bibinfo{publisher}{{?([\w\s]+)''',
     'Page_ACM_ACL_2' : r'''bibinfo{pages}{(\d+)(-+)?(\d*)''',
@@ -564,6 +585,7 @@ Patterns = {
     'Pages_ACM_ACL_3' : r'''bibinfo{pages}{(\d+)(-+)?(\d*)''',
     'Pages_IEEE_ARXIV_CVPR_3' : r'''(\d+)-+(\d+)''',
     'Publisher_IEEE_aRXIV_CVPR_3' : r'''em[ph{\s]+([^}]+)'''
+    
 
 }
 for filename in os.listdir(directory):
@@ -573,7 +595,6 @@ for filename in os.listdir(directory):
         root = ET.Element("bibliography")
         with open(os.path.join(directory, filename), 'r', encoding="utf8") as file:
             bbl_data= file.read()
-
             print()
             print()
             print()
@@ -602,7 +623,21 @@ for filename in os.listdir(directory):
 
             for i, entry in enumerate(entries[1:]):  # ignore the first empty entry
             # for entry in entries[1:]:  # ignore the first empty entry
+                
+
+                entry='''[{Zhu et~al.(2020)Zhu, Rawat, Zaheer, Bhojanapalli, Li, Yu, and
+  Kumar}]{Chen_Zhu_2020}
+Chen Zhu, Ankit~Singh Rawat, Manzil Zaheer, Srinadh Bhojanapalli, Daliang Li,
+  Felix Yu, and Sanjiv Kumar. 2020.
+\\newblock \href {https://arxiv.org/abs/2012.00363} {Modifying memories in
+  transformer models}.
+\\newblock \emph{arXiv}, abs/2012.00363.
+
+\end{thebibliography}
+'''
+                print("--------Entry original --------------")
                 print(entry)
+                print()
                 fields = entry.split('\\newblock')
                 # if len(fields) < 3:
                 #     print(f"The bibitem {i} of file {filename} does not contain all the three blocks")
@@ -619,14 +654,18 @@ for filename in os.listdir(directory):
                 # data_1 = re.sub('\s+',' ',fields[0].strip().replace('\n', ' '))
                 # data_2 = re.sub('\s+',' ',fields[1].strip().replace('\n', ' '))
                 # data_3 = re.sub('\s+',' ',fields[2].strip().replace('\n', ' '))
-  
+                for d in data:
+                    print(d, end='\n\n')
+
                 Matched_data = dict()
-                for i in range(1,15):
+                for i in range(1,16):
                     Matched_data[str(i)] = []
+
                 if len(data) > 0:
                     Matched_data['1'] = re.findall(Patterns["Author_ACM_ACL_1"], data[0])
                     Matched_data['2'] = re.findall(Patterns["YEAR_ACM_ACL_1"], data[0])
                     Matched_data['3'] = re.findall(Patterns["BIB_ACM_ACL_1"], data[0])
+                    Matched_data['15'] = re.findall(Patterns["Author_ACM_ACL_2"], data[0])
                 if len(data) > 1:
                     Matched_data['4'] = re.findall(Patterns["Article_ACM_ACL_2"], data[1])
                     Matched_data['5'] = re.findall(Patterns["Book_ACM_ACL_2"], data[1])
@@ -634,6 +673,8 @@ for filename in os.listdir(directory):
                     Matched_data['7'] = re.findall(Patterns["Page_ACM_ACL_2"], data[1])
                     Matched_data['7'] = re.findall(Patterns["Page_ACM_ACL_2"], data[1])
                     Matched_data['8'] = re.findall(Patterns["Title_IEEE_ARXIV_CVPR_2"], data[1])
+                    print(Matched_data['8'])
+                    input()
                 if len(data) > 2:
                     Matched_data['9'] = re.findall(Patterns["Journal_ACM_3"], data[2])
                     Matched_data['10'] = re.findall(Patterns["Year_ACM_ACL_3"], data[2])
@@ -641,7 +682,8 @@ for filename in os.listdir(directory):
                     Matched_data['12'] = re.findall(Patterns["Pages_ACM_ACL_3"], data[2])
                     Matched_data['13'] = re.findall(Patterns["Publisher_IEEE_aRXIV_CVPR_3"], data[2])
                     Matched_data['14'] = re.findall(Patterns["Pages_IEEE_ARXIV_CVPR_3"], data[2])
-
+                # print(Matched_data)
+                # input()
                 paper_format = None
                 if len(Matched_data['4']) or len(Matched_data['5']):
                     paper_format = "ACL/M"
