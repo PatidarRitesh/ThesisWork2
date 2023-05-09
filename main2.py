@@ -557,6 +557,67 @@ def get_information2(root, Matched_data, paper_name, data_1):
     
     return information
 
+def get_information3(root, Matched_data, paper_name, data_1):
+    information=init_dict()
+
+    try:
+        if len(Matched_data['16']):
+            information['author'] = Matched_data['16'][0]
+            # title_author = ET.SubElement(entry_elem, 'author')
+            # title_author.text = information['author']
+    except Exception as e:
+        print("Error in fetching author name")
+        
+    try:
+        # print(Matched_data['17'])
+        # input()
+        if len(Matched_data['17'])>=1:
+           
+            information['title'] = Matched_data['17'][0]
+                # title_elem = ET.SubElement(entry_elem, 'title')
+                # title_elem.text = information['title']
+    except Exception as e:
+        print("Error in fetching title")
+
+    try:
+        if len(Matched_data['18']):
+            information['publisher'] = Matched_data['18'][0]
+            # publisher_elem = ET.SubElement(entry_elem, 'publisher')
+            # publisher_elem.text = information['publisher']
+    except Exception as e:
+        print("Error in fetching publisher")
+
+    try:
+        if len(Matched_data['19']):
+            information['volume'] = Matched_data['19'][0]
+            # volume_elem = ET.SubElement(entry_elem, 'volume')
+            # volume_elem.text = information['volume']
+    except Exception as e:
+        print("Error in fetching volume")
+
+    try:
+        if len(Matched_data['20']):
+            information['ID'] = Matched_data['20'][0]
+            # pages_elem = ET.SubElement(entry_elem, 'pages')
+            # pages_elem.text = information['pages']
+    except Exception as e:
+        print("Error in fetching ID")
+    
+    try:
+        if information['ID']!='':
+            year = re.findall(Patterns["No_new_block_year"], information['ID'])
+            print(year)
+            if len(year):
+                information['year'] = year[0]
+    except Exception as e:
+        print('Error in fetching year')
+    return information
+
+           
+
+    
+    
+
 import time
 import os
             
@@ -584,7 +645,14 @@ Patterns = {
     'Volumne_ACM_ACL_3' : r'''bibinfo{volume}{(\d+)''',
     'Pages_ACM_ACL_3' : r'''bibinfo{pages}{(\d+)(-+)?(\d*)''',
     'Pages_IEEE_ARXIV_CVPR_3' : r'''(\d+)-+(\d+)''',
-    'Publisher_IEEE_aRXIV_CVPR_3' : r'''em[ph{\s]+([^}]+)'''
+    'Publisher_IEEE_aRXIV_CVPR_3' : r'''em[ph{\s]+([^}]+)''',
+
+    'No_new_block_Author_1' : r'''bibitem{[\w\d\s:'^%.,]*} ([^``]*)''',
+    'No_new_block_Title_1' : r'''``([^'']*)''',
+    'No_new_block_Publisher_1' : r'''emph{([^}]*)''',
+    'No_new_block_Vol_1' : r'''vol.[~\s](\d*)''',
+    'No_new_block_Id_1': r'''bibitem{([^}]*)''',
+    'No_new_block_year' : r'''\d{4}'''
     
 
 }
@@ -625,16 +693,7 @@ for filename in os.listdir(directory):
             # for entry in entries[1:]:  # ignore the first empty entry
                 
 
-                entry='''[{Zhu et~al.(2020)Zhu, Rawat, Zaheer, Bhojanapalli, Li, Yu, and
-  Kumar}]{Chen_Zhu_2020}
-Chen Zhu, Ankit~Singh Rawat, Manzil Zaheer, Srinadh Bhojanapalli, Daliang Li,
-  Felix Yu, and Sanjiv Kumar. 2020.
-\\newblock \href {https://arxiv.org/abs/2012.00363} {Modifying memories in
-  transformer models}.
-\\newblock \emph{arXiv}, abs/2012.00363.
-
-\end{thebibliography}
-'''
+                entry='''\\bibitem{phillips2016industry} R.~L. Phillips and R.~Ormsby, ``Industry classification schemes: An analysis and review,'' \emph{Journal of Business \& Finance Librarianship}, vol.~21, no.~1, pp. 1--25, 2016.'''
                 print("--------Entry original --------------")
                 print(entry)
                 print()
@@ -658,7 +717,7 @@ Chen Zhu, Ankit~Singh Rawat, Manzil Zaheer, Srinadh Bhojanapalli, Daliang Li,
                     print(d, end='\n\n')
 
                 Matched_data = dict()
-                for i in range(1,16):
+                for i in range(1,21):
                     Matched_data[str(i)] = []
 
                 if len(data) > 0:
@@ -666,6 +725,18 @@ Chen Zhu, Ankit~Singh Rawat, Manzil Zaheer, Srinadh Bhojanapalli, Daliang Li,
                     Matched_data['2'] = re.findall(Patterns["YEAR_ACM_ACL_1"], data[0])
                     Matched_data['3'] = re.findall(Patterns["BIB_ACM_ACL_1"], data[0])
                     Matched_data['15'] = re.findall(Patterns["Author_ACM_ACL_2"], data[0])
+
+                    Matched_data['16'] = re.findall(Patterns["No_new_block_Author_1"], data[0])
+                    Matched_data['17'] = re.findall(Patterns["No_new_block_Title_1"], data[0])
+                    Matched_data['18'] = re.findall(Patterns["No_new_block_Publisher_1"], data[0])
+                    Matched_data['19'] = re.findall(Patterns["No_new_block_Vol_1"], data[0])
+                    Matched_data['20'] = re.findall(Patterns["No_new_block_Id_1"], data[0])
+                    # print(Matched_data['16'])
+                    # print(Matched_data['17'])
+                    # print(Matched_data['18'])
+                    # print(Matched_data['19'])
+                    # print(Matched_data['20'])
+                    # input()
                 if len(data) > 1:
                     Matched_data['4'] = re.findall(Patterns["Article_ACM_ACL_2"], data[1])
                     Matched_data['5'] = re.findall(Patterns["Book_ACM_ACL_2"], data[1])
@@ -691,7 +762,14 @@ Chen Zhu, Ankit~Singh Rawat, Manzil Zaheer, Srinadh Bhojanapalli, Daliang Li,
                     print("========================================================================================")
                     print(information)  
                     print("========================================================================================")                   
+                elif(len(Matched_data['17'])):
+                    information= get_information3(root, Matched_data, output_directory + paper_name, data[0])
+                    print("========================================================================================")
+                    print(information)  
+                    print("========================================================================================") 
+
                 else:
+
                     paper_format = "IEEE/ARXIV/CVPR"
                     information = get_information2(root, Matched_data, output_directory + paper_name, data[0])
                     print("========================================================================================")
